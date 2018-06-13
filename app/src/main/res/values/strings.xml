@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Currency Converter</string>
     <string name="button_convert">Convert</string>
+    <string name="currency_input">Enter Currency Amount</string>
 </resources>
