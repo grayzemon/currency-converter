@@ -9,14 +9,17 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 
-import java.util.ArrayList;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Currency;
 import java.util.List;
-import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import okhttp3.HttpUrl;
+
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -36,10 +39,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Button convert = (Button) findViewById(R.id.button_convert) ;
         convert.setOnClickListener(this);
 
-        List<String> test = new ArrayList<>(Arrays.asList(
-                "EUR","USD","GBP"
-        ));
-
         getCurrencyList();
 
         ArrayAdapter<String> currencies =
@@ -49,20 +48,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void getCurrencyList() {
-        final Set<Currency> availableCurrencies = Currency.getAvailableCurrencies();
-        Stream<Currency> stream = availableCurrencies.stream();
-        Function<Currency,String> map = currency -> currency.getDisplayName();
-        currencyNames = stream.map(map).sorted().filter(str -> str.matches(REGEX)).collect(Collectors.toList());
-        for (String s : currencyNames) {
-            Log.v(TAG, s);
-        }
+        final String currencyCodeList = "AUD,BGN,BRL,CAD,CHF,CNY,CZK,DKK,GBP,HKD,HRK,HUF,IDR,ILS,INR,ISK,JPY,KRW,MXN,MYR,NOK,NZD,PHP,PLN,RON,RUB,SEK,SGD,THB,TRY,USD,ZAR";
+        final List<String> currencyCodes = Arrays.asList(currencyCodeList.split(","));
+
+        Function<String,String> mapCode2Desc = currencyCode -> Currency.getInstance(currencyCode).getDisplayName() + " " + currencyCode;
+        Consumer<String> desc = d -> Log.v(TAG,"currency after sort & map = " + d);
+        Stream<String> stream = currencyCodes.stream();
+        currencyNames = stream.sorted().map(mapCode2Desc).peek(desc).collect(Collectors.toList());
+
     }
 
     @Override
     public void onClick(View v) {
         Log.d(TAG,"onClick: Button pressed");
-        View view = findViewById(R.id.constraint_main);
-        Snackbar.make(view, R.string.snackBarMessage,Snackbar.LENGTH_SHORT).show();
 
+        int selectedPositionFrom = convertFrom.getSelectedItemPosition();
+        int selectedPositionTo = convertTo.getSelectedItemPosition();
+        String selectedCurrencyFrom = currencyNames.get(selectedPositionFrom);
+        String selectedCurrencyTo = currencyNames.get(selectedPositionTo);
+        String currencyFrom = selectedCurrencyFrom.substring(
+                selectedCurrencyFrom.length() - 3,selectedCurrencyFrom.length());
+        String currencyTo = selectedCurrencyTo.substring(
+                selectedCurrencyTo.length() - 3,selectedCurrencyTo.length());
+
+        URL url = new HttpUrl.Builder()
+                .scheme("https")
+                .host("exchangeratesapi.io")
+                .addPathSegments("api/latest")
+                .addQueryParameter("base", currencyFrom)
+                .addQueryParameter("symbols", currencyTo)
+                .build().url();
+        Log.d(TAG, url.toString());
+        View view = findViewById(R.id.constraint_main);
+        Snackbar.make(view, "URL=" + url.toString(),Snackbar.LENGTH_SHORT).show();
     }
 }
