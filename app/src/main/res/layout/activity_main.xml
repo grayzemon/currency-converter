@@ -17,11 +17,14 @@
         android:ems="10"
         android:focusable="false"
         android:focusableInTouchMode="false"
-        android:inputType="numberDecimal"
-        android:textSize="12sp"
+        android:hint="@string/currency_conversion_rate"
+        android:inputType="number"
+        android:text="@string/rate"
+        android:textAppearance="@android:style/TextAppearance.Material.Large"
         app:layout_constraintEnd_toEndOf="@+id/button_convert"
         app:layout_constraintStart_toStartOf="@+id/button_convert"
-        app:layout_constraintTop_toBottomOf="@+id/button_convert" />
+        app:layout_constraintTop_toBottomOf="@+id/button_convert"
+        tools:text="Rate:" />
 
     <Button
         android:id="@+id/button_convert"
