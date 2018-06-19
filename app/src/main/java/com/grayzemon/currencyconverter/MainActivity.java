@@ -20,6 +20,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Currency;
 import java.util.List;
@@ -33,7 +34,6 @@ import okhttp3.HttpUrl;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    public static final String REGEX = ".+[^()0-9-]+";
     private final String TAG = getClass().getSimpleName();
     private Spinner convertFrom;
     private Spinner convertTo;
@@ -41,9 +41,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private URL url;
     private String currencyFrom;
     private String currencyTo;
+
     private double rate;
-    private TextView numberConvertedAmount;
+    private Double amount =1.00d;
+    private Double convertedAmount =0.00d;
+
+    private TextView textBaseAmount;
+    private TextView textRateAmount;
+    private TextView textConvertedAmount;
     private Button buttonConvert;
+
+    interface VolleyCallback {
+        public void onSuccess(JSONObject response);
+        public void onErrorResponse(VolleyError error);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,11 +62,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         convertFrom = (Spinner) findViewById(R.id.spinner_convert_from);
         convertTo = (Spinner) findViewById(R.id.spinner_convert_to);
-        numberConvertedAmount = (TextView) findViewById(R.id.number_converted_amount);
+        textRateAmount = (TextView) findViewById(R.id.rate_converted_amount);
+        textBaseAmount = (TextView) findViewById(R.id.number_amount);
+        textBaseAmount.setText(String.valueOf(amount));
+        textConvertedAmount = (TextView) findViewById(R.id.text_converted_amount);
 
         buttonConvert = (Button) findViewById(R.id.button_convert);
         buttonConvert.setOnClickListener(this);
-
         getCurrencyList();
 
         ArrayAdapter<String> currencies =
@@ -85,8 +98,45 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         buttonConvert.setEnabled(false);
         getCurrencyCodesFromDropdowns();
         buildURL();
-        //showSnackBar(url.toString());
-        getCurrencyRate();
+        getCurrencyRate(new VolleyCallback() {
+            @Override
+            public void onSuccess(JSONObject response) {
+                buttonConvert.setEnabled(true);
+                setTextRate(response);
+            }
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                buttonConvert.setEnabled(true);
+                Log.d(TAG,error.getMessage());
+                showSnackBar("Error:" + error.getMessage());
+            }
+        });
+    }
+
+    private void setTextRate(JSONObject response) {
+        try {
+            buttonConvert.setEnabled(true);
+            rate = response.getJSONObject("rates").getDouble(currencyTo);
+            Log.d(TAG,"Converted=" + rate);
+            textRateAmount.setText(String.valueOf(rate));
+            calculateConvertedAmount();
+        } catch (JSONException e) {
+            Log.d(TAG,"Error: " + e.getMessage());
+        }
+    }
+
+    private void calculateConvertedAmount() {
+        String amountStr = textBaseAmount.getText().toString();
+        if (amountStr.isEmpty())
+            return;
+        amount = Double.valueOf(amountStr);
+        convertedAmount = rate * amount;
+        DecimalFormat df = new DecimalFormat("###.##");
+        String currencySymbol = Currency.getInstance(currencyTo).getSymbol();
+        String convertedText = currencySymbol + " " + df.format(convertedAmount);
+        textConvertedAmount.setText(convertedText);
+        Log.d(TAG, "Converted Amount: " + convertedAmount);
     }
 
     private void getCurrencyCodesFromDropdowns() {
@@ -113,10 +163,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void showSnackBar(String text) {
         View view = findViewById(R.id.constraint_main);
-        Snackbar.make(view, text,Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(view, text,Snackbar.LENGTH_LONG).show();
     }
 
-    public void getCurrencyRate(){
+    public void getCurrencyRate(VolleyCallback callback){
         RequestQueue queue = Volley.newRequestQueue(this);
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 url.toString(),
@@ -124,21 +174,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        try {
-                            buttonConvert.setEnabled(true);
-                            rate = response.getJSONObject("rates").getDouble(currencyTo);
-                            Log.d(TAG,"Converted=" + rate);
-                            numberConvertedAmount.setText(String.valueOf(rate));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            showSnackBar(e.getMessage());
-                        }
+                    callback.onSuccess(response);
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                buttonConvert.setEnabled(true);
-                Log.d(TAG,error.getMessage());
+                callback.onErrorResponse(error);
             }
         });
         queue.add(jsonObjectRequest);

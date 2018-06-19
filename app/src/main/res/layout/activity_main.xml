@@ -8,7 +8,7 @@
     tools:context=".MainActivity">
 
     <EditText
-        android:id="@+id/number_converted_amount"
+        android:id="@+id/rate_converted_amount"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
@@ -55,8 +55,7 @@
         android:ems="10"
         android:hint="@string/currency_input"
         android:inputType="numberDecimal"
-        android:textAlignment="center"
-        android:textSize="12sp"
+        android:textAppearance="@android:style/TextAppearance.Material.Large"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -69,4 +68,21 @@
         app:layout_constraintEnd_toEndOf="@+id/number_amount"
         app:layout_constraintStart_toStartOf="@+id/number_amount"
         app:layout_constraintTop_toBottomOf="@+id/number_amount" />
+
+    <EditText
+        android:id="@+id/text_converted_amount"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:ems="10"
+        android:inputType="numberDecimal"
+        android:text="@string/converted_amount"
+        android:clickable="false"
+        android:cursorVisible="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:textAppearance="@android:style/TextAppearance.Material.Large"
+        app:layout_constraintEnd_toEndOf="@+id/rate_converted_amount"
+        app:layout_constraintStart_toStartOf="@+id/rate_converted_amount"
+        app:layout_constraintTop_toBottomOf="@+id/rate_converted_amount" />
 </android.support.constraint.ConstraintLayout>
