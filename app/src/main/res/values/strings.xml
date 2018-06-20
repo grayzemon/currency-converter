@@ -4,6 +4,6 @@
     <string name="currency_input">Enter Currency Amount</string>
     <string name="snackBarMessage">Button convert clicked</string>
     <string name="currency_conversion_rate">Currency conversion rate</string>
-    <string name="rate">Rate:</string>
+    <string name="rate">Rate</string>
     <string name="converted_amount">Converted Amount</string>
 </resources>

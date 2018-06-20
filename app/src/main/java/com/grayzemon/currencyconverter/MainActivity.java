@@ -1,5 +1,8 @@
 package com.grayzemon.currencyconverter;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -34,6 +37,9 @@ import okhttp3.HttpUrl;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
+    public static final String HOST = "exchangeratesapi.io";
+    public static final String PATH_SEGMENTS = "api/latest";
+    public static final String HTTPS = "https";
     private final String TAG = getClass().getSimpleName();
     private Spinner convertFrom;
     private Spinner convertTo;
@@ -50,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView textRateAmount;
     private TextView textConvertedAmount;
     private Button buttonConvert;
+    private DecimalFormat df = new DecimalFormat("###,###.00");
 
     interface VolleyCallback {
         public void onSuccess(JSONObject response);
@@ -64,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         convertTo = (Spinner) findViewById(R.id.spinner_convert_to);
         textRateAmount = (TextView) findViewById(R.id.rate_converted_amount);
         textBaseAmount = (TextView) findViewById(R.id.number_amount);
-        textBaseAmount.setText(String.valueOf(amount));
+        textBaseAmount.setText(String.valueOf(df.format(amount)));
         textConvertedAmount = (TextView) findViewById(R.id.text_converted_amount);
 
         buttonConvert = (Button) findViewById(R.id.button_convert);
@@ -108,10 +115,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onErrorResponse(VolleyError error) {
                 buttonConvert.setEnabled(true);
-                Log.d(TAG,error.getMessage());
-                showSnackBar("Error:" + error.getMessage());
+                checkNetworkConnection(error);
             }
         });
+    }
+
+    private void checkNetworkConnection(VolleyError error) {
+        Log.d(TAG,error.getMessage());
+        if (isNetworkAvailable())
+            showSnackBar("Error:" + error.getMessage());
+        else
+            showSnackBar("No network connection");
     }
 
     private void setTextRate(JSONObject response) {
@@ -132,7 +146,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
         amount = Double.valueOf(amountStr);
         convertedAmount = rate * amount;
-        DecimalFormat df = new DecimalFormat("###.##");
         String currencySymbol = Currency.getInstance(currencyTo).getSymbol();
         String convertedText = currencySymbol + " " + df.format(convertedAmount);
         textConvertedAmount.setText(convertedText);
@@ -152,9 +165,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void buildURL() {
         url = new HttpUrl.Builder()
-                .scheme("https")
-                .host("exchangeratesapi.io")
-                .addPathSegments("api/latest")
+                .scheme(HTTPS)
+                .host(HOST)
+                .addPathSegments(PATH_SEGMENTS)
                 .addQueryParameter("base", currencyFrom)
                 .addQueryParameter("symbols", currencyTo)
                 .build().url();
@@ -183,5 +196,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
         queue.add(jsonObjectRequest);
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }
