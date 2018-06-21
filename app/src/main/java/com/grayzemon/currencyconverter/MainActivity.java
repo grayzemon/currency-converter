@@ -40,6 +40,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final String HOST = "exchangeratesapi.io";
     public static final String PATH_SEGMENTS = "api/latest";
     public static final String HTTPS = "https";
+    public static final String BASE = "base";
+    public static final String SYMBOLS = "symbols";
     private final String TAG = getClass().getSimpleName();
     private Spinner convertFrom;
     private Spinner convertTo;
@@ -56,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView textRateAmount;
     private TextView textConvertedAmount;
     private Button buttonConvert;
-    private DecimalFormat df = new DecimalFormat("###,###.00");
+    private DecimalFormat df = new DecimalFormat("###,##0.00");
 
     interface VolleyCallback {
         public void onSuccess(JSONObject response);
@@ -142,8 +144,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void calculateConvertedAmount() {
         String amountStr = textBaseAmount.getText().toString();
-        if (amountStr.isEmpty())
+        if (amountStr.isEmpty() || amountStr.equals(".")) {
+            showSnackBar("Invalid amount entered");
             return;
+        }
         amount = Double.valueOf(amountStr);
         convertedAmount = rate * amount;
         String currencySymbol = Currency.getInstance(currencyTo).getSymbol();
@@ -168,8 +172,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .scheme(HTTPS)
                 .host(HOST)
                 .addPathSegments(PATH_SEGMENTS)
-                .addQueryParameter("base", currencyFrom)
-                .addQueryParameter("symbols", currencyTo)
+                .addQueryParameter(BASE, currencyFrom)
+                .addQueryParameter(SYMBOLS, currencyTo)
                 .build().url();
         Log.d(TAG, url.toString());
     }
