@@ -27,7 +27,6 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Currency;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -84,8 +83,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 new ArrayAdapter<>(this,R.layout.support_simple_spinner_dropdown_item,currencyNames);
         convertFrom.setAdapter(currencies);
         convertTo.setAdapter(currencies);
-        convertFrom.setSelection(9);
-        convertTo.setSelection(8);
+        convertFrom.setSelection(currencyNames.indexOf("British Pound GBP"));
+        convertTo.setSelection(currencyNames.indexOf("Euro EUR"));
     }
 
     private void getCurrencyList() {
@@ -95,15 +94,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         final List<String> currencyCodes = Arrays.asList(currencyCodeList.split(","));
 
         Function<String,String> mapCode2Desc = currencyCode -> Currency.getInstance(currencyCode).getDisplayName() + " " + currencyCode;
-        Consumer<String> desc = d -> Log.v(TAG,"currency after sort & map = " + d);
+        //Consumer<String> desc = d -> Log.v(TAG,"currency after sort & map = " + d);
         Stream<String> stream = currencyCodes.stream();
-        currencyNames = stream.sorted().map(mapCode2Desc).peek(desc).collect(Collectors.toList());
+        currencyNames = stream.map(mapCode2Desc).sorted().collect(Collectors.toList());
 
     }
 
     @Override
     public void onClick(View v) {
         Log.d(TAG,"onClick: Button pressed");
+        if (!validInputAmount())
+            return;
         buttonConvert.setEnabled(false);
         getCurrencyCodesFromDropdowns();
         buildURL();
@@ -143,17 +144,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void calculateConvertedAmount() {
-        String amountStr = textBaseAmount.getText().toString();
-        if (amountStr.isEmpty() || amountStr.equals(".")) {
-            showSnackBar("Invalid amount entered");
-            return;
-        }
-        amount = Double.valueOf(amountStr);
         convertedAmount = rate * amount;
         String currencySymbol = Currency.getInstance(currencyTo).getSymbol();
         String convertedText = currencySymbol + " " + df.format(convertedAmount);
         textConvertedAmount.setText(convertedText);
         Log.d(TAG, "Converted Amount: " + convertedAmount);
+    }
+
+    private boolean validInputAmount() {
+        String amountStr = textBaseAmount.getText().toString();
+        if (amountStr.isEmpty() || amountStr.equals(".")) {
+            showSnackBar(getString(R.string.Invalid_Amount));
+            Log.d(TAG,getString(R.string.Invalid_Amount));
+            return false;
+        }
+        amount = Double.valueOf(amountStr);
+        return true;
     }
 
     private void getCurrencyCodesFromDropdowns() {

@@ -6,4 +6,5 @@
     <string name="currency_conversion_rate">Currency conversion rate</string>
     <string name="rate">Rate</string>
     <string name="converted_amount">Converted Amount</string>
+    <string name="Invalid_Amount">Invalid amount entered</string>
 </resources>
