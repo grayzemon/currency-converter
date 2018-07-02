@@ -4,7 +4,6 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -12,6 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -126,9 +126,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void checkNetworkConnection(VolleyError error) {
         Log.d(TAG,error.getMessage());
         if (isNetworkAvailable())
-            showSnackBar("Error:" + error.getMessage());
+            showMessage("Error:" + error.getMessage());
         else
-            showSnackBar("No network connection");
+            showMessage("No network connection");
     }
 
     private void setTextRate(JSONObject response) {
@@ -154,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean validInputAmount() {
         String amountStr = textBaseAmount.getText().toString();
         if (amountStr.isEmpty() || amountStr.equals(".")) {
-            showSnackBar(getString(R.string.Invalid_Amount));
+            showMessage(getString(R.string.Invalid_Amount));
             Log.d(TAG,getString(R.string.Invalid_Amount));
             return false;
         }
@@ -184,9 +184,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.d(TAG, url.toString());
     }
 
-    private void showSnackBar(String text) {
-        View view = findViewById(R.id.constraint_main);
-        Snackbar.make(view, text,Snackbar.LENGTH_LONG).show();
+    private void showMessage(String item) {
+        Toast.makeText(this,item,Toast.LENGTH_LONG).show();
     }
 
     public void getCurrencyRate(VolleyCallback callback){
