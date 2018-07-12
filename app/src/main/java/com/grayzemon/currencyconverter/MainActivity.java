@@ -1,6 +1,7 @@
 package com.grayzemon.currencyconverter;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -41,6 +42,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final String HTTPS = "https";
     public static final String BASE = "base";
     public static final String SYMBOLS = "symbols";
+    public static final String CONVERT_FROM = "convertFrom";
+    public static final String CONVERT_TO = "convertTo";
+    public static final String AMOUNT = "amount";
     private final String TAG = getClass().getSimpleName();
     private Spinner convertFrom;
     private Spinner convertTo;
@@ -64,6 +68,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         public void onErrorResponse(VolleyError error);
     }
 
+//    @Override
+//    protected void onDestroy() {
+//        super.onDestroy();
+//        setPreferences();
+//    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        setPreferences();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,7 +88,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         convertTo = (Spinner) findViewById(R.id.spinner_convert_to);
         textRateAmount = (TextView) findViewById(R.id.rate_converted_amount);
         textBaseAmount = (TextView) findViewById(R.id.number_amount);
-        textBaseAmount.setText(String.valueOf(df.format(amount)));
         textConvertedAmount = (TextView) findViewById(R.id.text_converted_amount);
 
         buttonConvert = (Button) findViewById(R.id.button_convert);
@@ -83,8 +98,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 new ArrayAdapter<>(this,R.layout.support_simple_spinner_dropdown_item,currencyNames);
         convertFrom.setAdapter(currencies);
         convertTo.setAdapter(currencies);
-        convertFrom.setSelection(currencyNames.indexOf("British Pound GBP"));
-        convertTo.setSelection(currencyNames.indexOf("Euro EUR"));
+        getPreferences();
     }
 
     private void getCurrencyList() {
@@ -103,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         Log.d(TAG,"onClick: Button pressed");
-        if (!validInputAmount())
+        if (!validateInputAmount(false))
             return;
         buttonConvert.setEnabled(false);
         getCurrencyCodesFromDropdowns();
@@ -151,10 +165,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.d(TAG, "Converted Amount: " + convertedAmount);
     }
 
-    private boolean validInputAmount() {
+    private boolean validateInputAmount(Boolean suppressMessage) {
         String amountStr = textBaseAmount.getText().toString();
         if (amountStr.isEmpty() || amountStr.equals(".")) {
-            showMessage(getString(R.string.Invalid_Amount));
+            if (!suppressMessage) {
+                showMessage(getString(R.string.Invalid_Amount));
+            }
             Log.d(TAG,getString(R.string.Invalid_Amount));
             return false;
         }
@@ -182,6 +198,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .addQueryParameter(SYMBOLS, currencyTo)
                 .build().url();
         Log.d(TAG, url.toString());
+    }
+
+    private void getPreferences() {
+        SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
+        String currencyFrom = sp.getString(CONVERT_FROM,"British Pound GBP");
+        String currencyTo= sp.getString(CONVERT_TO,"Euro EUR");
+        amount = Double.valueOf(sp.getString(AMOUNT,"1.00d"));
+        textBaseAmount.setText(String.valueOf(amount));
+        convertFrom.setSelection(currencyNames.indexOf(currencyFrom));
+        convertTo.setSelection(currencyNames.indexOf(currencyTo));
+        Log.d(TAG,"Load currencyFrom" + currencyFrom);
+        Log.d(TAG,"Load currencyTo" + currencyTo);
+        Log.d(TAG,"Load Amount" + amount);
+    }
+
+    private void setPreferences() {
+        int selectedPositionFrom = convertFrom.getSelectedItemPosition();
+        int selectedPositionTo = convertTo.getSelectedItemPosition();
+        String selectedCurrencyFrom = currencyNames.get(selectedPositionFrom);
+        String selectedCurrencyTo = currencyNames.get(selectedPositionTo);
+        SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor edit = sp.edit();
+        edit.putString(CONVERT_FROM, selectedCurrencyFrom);
+        edit.putString(CONVERT_TO, selectedCurrencyTo);
+        validateInputAmount(true);
+        edit.putString(AMOUNT, Double.toString(amount));
+        edit.apply();
+        Log.d(TAG,"Save currencyFrom" + selectedCurrencyFrom);
+        Log.d(TAG,"Save currencyTo" + selectedCurrencyTo);
+        Log.d(TAG,"Save Amount" + amount);
     }
 
     private void showMessage(String item) {

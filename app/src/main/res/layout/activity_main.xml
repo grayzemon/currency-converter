@@ -39,7 +39,7 @@
         android:id="@+id/button_convert"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:inputType="text"
+        android:backgroundTint="@color/ic_launcher_background2"
         android:text="@string/button_convert"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/guideline11"
@@ -67,7 +67,8 @@
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="@+id/guideline4"
         app:layout_constraintTop_toTopOf="@+id/guideline6"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintVertical_bias="1.0"
+        tools:style="@style/Platform.Widget.AppCompat.Spinner" />
 
     <EditText
         android:id="@+id/number_amount"
