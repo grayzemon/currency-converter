@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView textConvertedAmount;
     private Button buttonConvert;
     private DecimalFormat df = new DecimalFormat("###,##0.00");
+    private DecimalFormat df2 = new DecimalFormat("0.00");
 
     interface VolleyCallback {
         public void onSuccess(JSONObject response);
@@ -205,7 +206,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String currencyFrom = sp.getString(CONVERT_FROM,"British Pound GBP");
         String currencyTo= sp.getString(CONVERT_TO,"Euro EUR");
         amount = Double.valueOf(sp.getString(AMOUNT,"1.00d"));
-        textBaseAmount.setText(String.valueOf(amount));
+        textBaseAmount.setText(String.valueOf(df2.format(amount)));
         convertFrom.setSelection(currencyNames.indexOf(currencyFrom));
         convertTo.setSelection(currencyNames.indexOf(currencyTo));
         Log.d(TAG,"Load currencyFrom" + currencyFrom);
