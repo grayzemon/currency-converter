@@ -37,8 +37,8 @@ import okhttp3.HttpUrl;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    public static final String HOST = "exchangeratesapi.io";
-    public static final String PATH_SEGMENTS = "api/latest";
+    public static final String HOST = "api.exchangeratesapi.io";
+    public static final String PATH_SEGMENTS = "latest";
     public static final String HTTPS = "https";
     public static final String BASE = "base";
     public static final String SYMBOLS = "symbols";
