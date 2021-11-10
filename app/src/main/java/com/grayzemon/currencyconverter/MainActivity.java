@@ -37,14 +37,15 @@ import okhttp3.HttpUrl;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    public static final String HOST = "api.exchangeratesapi.io";
-    public static final String PATH_SEGMENTS = "latest";
+    public static final String HOST = "free-currency-converter.herokuapp.com";
+    public static final String PATH_SEGMENTS = "list/convert";
     public static final String HTTPS = "https";
-    public static final String BASE = "base";
-    public static final String SYMBOLS = "symbols";
+    public static final String BASE = "source";
+    public static final String SYMBOLS = "destination";
     public static final String CONVERT_FROM = "convertFrom";
     public static final String CONVERT_TO = "convertTo";
     public static final String AMOUNT = "amount";
+    public static final String RATES = "converted_value";
     private final String TAG = getClass().getSimpleName();
     private Spinner convertFrom;
     private Spinner convertTo;
@@ -149,7 +150,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void setTextRate(JSONObject response) {
         try {
             buttonConvert.setEnabled(true);
-            rate = response.getJSONObject("rates").getDouble(currencyTo);
+            //rate = response.getJSONObject(RATES).getDouble(currencyTo);
+            rate = response.getDouble(RATES);
             Log.d(TAG,"Converted=" + rate);
             textRateAmount.setText(String.valueOf(rate));
             calculateConvertedAmount();
